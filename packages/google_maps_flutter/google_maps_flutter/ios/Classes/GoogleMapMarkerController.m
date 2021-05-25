@@ -181,17 +181,17 @@ static UIImage* ExtractIcon(NSObject<FlutterPluginRegistrar>* registrar, NSArray
   UIImage* image;
   if ([iconData.firstObject isEqualToString:@"defaultMarker"]) {
     CGFloat hue = (iconData.count == 1) ? 0.0f : ToDouble(iconData[1]);
-    if (hue == 60.0) {
+    // if (hue == 60.0) {
       image = [GMSMarker markerImageWithColor:[UIColor colorWithHue:51 / 360.0
                                                          saturation:1.0
                                                          brightness:1.0
                                                               alpha:1.0]];
-    } else {
-      image = [GMSMarker markerImageWithColor:[UIColor colorWithHue:hue / 360.0
-                                                         saturation:1.0
-                                                         brightness:0.7
-                                                              alpha:1.0]];
-    }
+    // } else {
+    //   image = [GMSMarker markerImageWithColor:[UIColor colorWithHue:hue / 360.0
+    //                                                      saturation:1.0
+    //                                                      brightness:0.7
+    //                                                           alpha:1.0]];
+    // }
   } else if ([iconData.firstObject isEqualToString:@"fromAsset"]) {
     if (iconData.count == 2) {
       image = [UIImage imageNamed:[registrar lookupKeyForAsset:iconData[1]]];
