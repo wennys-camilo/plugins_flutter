@@ -38,18 +38,18 @@ abstract class QuickActionsPlatform extends PlatformInterface {
 
   /// Initializes this plugin.
   ///
-  /// Call this once before any further interaction with the the plugin.
+  /// Call this once before any further interaction with the plugin.
   Future<void> initialize(QuickActionHandler handler) async {
-    throw UnimplementedError("initialize() has not been implemented.");
+    throw UnimplementedError('initialize() has not been implemented.');
   }
 
   /// Sets the [ShortcutItem]s to become the app's quick actions.
   Future<void> setShortcutItems(List<ShortcutItem> items) async {
-    throw UnimplementedError("setShortcutItems() has not been implemented.");
+    throw UnimplementedError('setShortcutItems() has not been implemented.');
   }
 
   /// Removes all [ShortcutItem]s registered for the app.
   Future<void> clearShortcutItems() {
-    throw UnimplementedError("clearShortcutItems() has not been implemented.");
+    throw UnimplementedError('clearShortcutItems() has not been implemented.');
   }
 }

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(egarciad): Remove once integration_test is migrated to null safety.
-// @dart = 2.9
-
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -20,6 +17,7 @@ void main() {
 
     // Generally all devices should have some default browser.
     expect(await canLaunch('http://flutter.dev'), true);
+    expect(await canLaunch('https://www.google.com/404'), true);
 
     // SMS handling is available by default on most platforms.
     if (kIsWeb || !(Platform.isLinux || Platform.isWindows)) {

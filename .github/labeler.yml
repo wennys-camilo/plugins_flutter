@@ -1,26 +1,5 @@
-'p: android_alarm_manager':
-  - packages/android_alarm_manager/**/*
-
-'p: android_intent':
-  - packages/android_intent/**/*
-
-'p: battery':
-  - packages/battery/**/*
-
 'p: camera':
   - packages/camera/**/*
-
-'p: connectivity':
-  - packages/connectivity/**/*
-
-'p: cross_file':
-  - packages/cross_file/**/*
-
-'p: device_info':
-  - packages/device_info/**/*
-
-'p: e2e':
-  - packages/e2e/**/*
 
 'p: espresso':
   - packages/espresso/**/*
@@ -43,17 +22,11 @@
 'p: in_app_purchase':
   - packages/in_app_purchase/**/*
 
-'p: integration_test':
-  - packages/integration_test/**/*
-
 'p: ios_platform_images':
   - packages/ios_platform_images/**/*
 
 'p: local_auth':
   - packages/local_auth/**/*
-
-'p: package_info':
-  - packages/package_info/**/*
 
 'p: path_provider':
   - packages/path_provider/**/*
@@ -63,12 +36,6 @@
 
 'p: quick_actions':
   - packages/quick_actions/**/*
-
-'p: sensors':
-  - packages/sensors/**/*
-
-'p: share':
-  - packages/share/**/*
 
 'p: shared_preferences':
   - packages/shared_preferences/**/*
@@ -82,15 +49,14 @@
 'p: webview_flutter':
   - packages/webview_flutter/**/*
 
-'p: wifi_info_flutter':
-  - packages/wifi_info_flutter/**/*
-
 'platform-android':
   - packages/*/*_android/**/*
   - packages/**/android/**/*
 
 'platform-ios':
   - packages/*/*_ios/**/*
+  - packages/*/*_storekit/**/*
+  - packages/*/*_wkwebview/**/*
   - packages/**/ios/**/*
 
 'platform-linux':

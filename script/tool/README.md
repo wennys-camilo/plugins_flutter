@@ -26,7 +26,7 @@ cd ./script/tool && dart pub get && cd ../../
 Run:
 
 ```sh
-dart run ./script/tool/lib/src/main.dart <args>
+dart run ./script/tool/bin/flutter_plugin_tools.dart <args>
 ```
 
 ### Published Version
@@ -46,40 +46,62 @@ dart pub global run flutter_plugin_tools <args>
 ## Commands
 
 Run with `--help` for a full list of commands and arguments, but the
-following shows a number of common commands.
+following shows a number of common commands being run for a specific plugin.
 
 All examples assume running from source; see above for running the
 published version instead.
 
-Note that the `plugins` argument, despite the name, applies to any package.
-(It will likely be renamed `packages` in the future.)
+Most commands take a `--packages` argument to control which package(s) the
+command is targetting. An package name can be any of:
+- The name of a package (e.g., `path_provider_android`).
+- The name of a federated plugin (e.g., `path_provider`), in which case all
+  packages that make up that plugin will be targetted.
+- A combination federated_plugin_name/package_name (e.g.,
+  `path_provider/path_provider` for the app-facing package).
 
 ### Format Code
 
 ```sh
 cd <repository root>
-dart run /script/tool/lib/src/main.dart format --plugins plugin_name
+dart run ./script/tool/bin/flutter_plugin_tools.dart format --packages plugin_name
 ```
 
 ### Run the Dart Static Analyzer
 
 ```sh
 cd <repository root>
-dart run ./script/tool/lib/src/main.dart analyze --plugins plugin_name
+dart run ./script/tool/bin/flutter_plugin_tools.dart analyze --packages plugin_name
 ```
 
 ### Run Dart Unit Tests
 
 ```sh
 cd <repository root>
-dart run ./script/tool/lib/src/main.dart test --plugins plugin_name
+dart run ./script/tool/bin/flutter_plugin_tools.dart test --packages plugin_name
 ```
 
-### Run XCTests
+### Run Dart Integration Tests
 
 ```sh
 cd <repository root>
-dart run ./script/tool/lib/src/main.dart xctest --target RunnerUITests --skip <plugins_to_skip>
+dart run ./script/tool/bin/flutter_plugin_tools.dart build-examples --packages plugin_name
+dart run ./script/tool/bin/flutter_plugin_tools.dart drive-examples --packages plugin_name
+```
+
+### Run Native Tests
+
+`native-test` takes one or more platform flags to run tests for. By default it
+runs both unit tests and (on platforms that support it) integration tests, but
+`--no-unit` or `--no-integration` can be used to run just one type.
+
+Examples:
+
+```sh
+cd <repository root>
+# Run just unit tests for iOS and Android:
+dart run ./script/tool/bin/flutter_plugin_tools.dart native-test --ios --android --no-integration --packages plugin_name
+# Run all tests for macOS:
+dart run ./script/tool/bin/flutter_plugin_tools.dart native-test --macos --packages plugin_name
 ```
 
 ### Publish a Release
@@ -87,11 +109,12 @@ dart run ./script/tool/lib/src/main.dart xctest --target RunnerUITests --skip <p
 ``sh
 cd <path_to_plugins>
 git checkout <commit_hash_to_publish>
-dart run ./script/tool/lib/src/main.dart publish-plugin --package <package>
+dart run ./script/tool/bin/flutter_plugin_tools.dart publish-plugin --package <package>
 ``
 
 By default the tool tries to push tags to the `upstream` remote, but some
-additional settings can be configured. Run `dart run ./script/tool/lib/src/main.dart publish-plugin --help` for more usage information.
+additional settings can be configured. Run `dart run ./script/tool/bin/flutter_plugin_tools.dart
+publish-plugin --help` for more usage information.
 
 The tool wraps `pub publish` for pushing the package to pub, and then will
 automatically use git to try to create and push tags. It has some additional

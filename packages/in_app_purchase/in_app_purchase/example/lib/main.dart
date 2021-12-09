@@ -4,22 +4,16 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
+import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 import 'consumable_store.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    // For play billing library 2.0 on Android, it is mandatory to call
-    // [enablePendingPurchases](https://developer.android.com/reference/com/android/billingclient/api/BillingClient.Builder.html#enablependingpurchases)
-    // as part of initializing the app.
-    InAppPurchaseAndroidPlatformAddition.enablePendingPurchases();
-  }
 
   runApp(_MyApp());
 }
@@ -84,6 +78,12 @@ class _MyAppState extends State<_MyApp> {
       return;
     }
 
+    if (Platform.isIOS) {
+      var iosPlatformAddition = _inAppPurchase
+          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      await iosPlatformAddition.setDelegate(ExamplePaymentQueueDelegate());
+    }
+
     ProductDetailsResponse productDetailResponse =
         await _inAppPurchase.queryProductDetails(_kProductIds.toSet());
     if (productDetailResponse.error != null) {
@@ -114,8 +114,6 @@ class _MyAppState extends State<_MyApp> {
       return;
     }
 
-    await _inAppPurchase.restorePurchases();
-
     List<String> consumables = await ConsumableStore.load();
     setState(() {
       _isAvailable = isAvailable;
@@ -129,6 +127,11 @@ class _MyAppState extends State<_MyApp> {
 
   @override
   void dispose() {
+    if (Platform.isIOS) {
+      var iosPlatformAddition = _inAppPurchase
+          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      iosPlatformAddition.setDelegate(null);
+    }
     _subscription.cancel();
     super.dispose();
   }
@@ -143,6 +146,7 @@ class _MyAppState extends State<_MyApp> {
             _buildConnectionCheckTile(),
             _buildProductList(),
             _buildConsumableBox(),
+            _buildRestoreButton(),
           ],
         ),
       );
@@ -246,7 +250,9 @@ class _MyAppState extends State<_MyApp> {
               productDetails.description,
             ),
             trailing: previousPurchase != null
-                ? Icon(Icons.check)
+                ? IconButton(
+                    onPressed: () => confirmPriceChange(context),
+                    icon: Icon(Icons.upgrade))
                 : TextButton(
                     child: Text(productDetails.price),
                     style: TextButton.styleFrom(
@@ -337,6 +343,30 @@ class _MyAppState extends State<_MyApp> {
     ]));
   }
 
+  Widget _buildRestoreButton() {
+    if (_loading) {
+      return Container();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            child: Text('Restore purchases'),
+            style: TextButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              primary: Colors.white,
+            ),
+            onPressed: () => _inAppPurchase.restorePurchases(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> consume(String id) async {
     await ConsumableStore.consume(id);
     final List<String> consumables = await ConsumableStore.load();
@@ -391,7 +421,8 @@ class _MyAppState extends State<_MyApp> {
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
           handleError(purchaseDetails.error!);
-        } else if (purchaseDetails.status == PurchaseStatus.purchased) {
+        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
+            purchaseDetails.status == PurchaseStatus.restored) {
           bool valid = await _verifyPurchase(purchaseDetails);
           if (valid) {
             deliverProduct(purchaseDetails);
@@ -415,6 +446,35 @@ class _MyAppState extends State<_MyApp> {
     });
   }
 
+  Future<void> confirmPriceChange(BuildContext context) async {
+    if (Platform.isAndroid) {
+      final InAppPurchaseAndroidPlatformAddition androidAddition =
+          _inAppPurchase
+              .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+      var priceChangeConfirmationResult =
+          await androidAddition.launchPriceChangeConfirmationFlow(
+        sku: 'purchaseId',
+      );
+      if (priceChangeConfirmationResult.responseCode == BillingResponse.ok) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Price change accepted'),
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            priceChangeConfirmationResult.debugMessage ??
+                "Price change failed with code ${priceChangeConfirmationResult.responseCode}",
+          ),
+        ));
+      }
+    }
+    if (Platform.isIOS) {
+      var iapStoreKitPlatformAddition = _inAppPurchase
+          .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      await iapStoreKitPlatformAddition.showPriceConsentIfNeeded();
+    }
+  }
+
   GooglePlayPurchaseDetails? _getOldSubscription(
       ProductDetails productDetails, Map<String, PurchaseDetails> purchases) {
     // This is just to demonstrate a subscription upgrade or downgrade.
@@ -435,5 +495,23 @@ class _MyAppState extends State<_MyApp> {
           purchases[_kSilverSubscriptionId] as GooglePlayPurchaseDetails;
     }
     return oldSubscription;
+  }
+}
+
+/// Example implementation of the
+/// [`SKPaymentQueueDelegate`](https://developer.apple.com/documentation/storekit/skpaymentqueuedelegate?language=objc).
+///
+/// The payment queue delegate can be implementated to provide information
+/// needed to complete transactions.
+class ExamplePaymentQueueDelegate implements SKPaymentQueueDelegateWrapper {
+  @override
+  bool shouldContinueTransaction(
+      SKPaymentTransactionWrapper transaction, SKStorefrontWrapper storefront) {
+    return true;
+  }
+
+  @override
+  bool shouldShowPriceConsent() {
+    return false;
   }
 }

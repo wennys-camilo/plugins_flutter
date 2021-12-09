@@ -6,23 +6,8 @@ A Flutter plugin for launching a URL. Supports
 iOS, Android, web, Windows, macOS, and Linux.
 
 ## Usage
+
 To use this plugin, add `url_launcher` as a [dependency in your pubspec.yaml file](https://flutter.dev/platform-plugins/).
-
-## Installation
-
-### iOS 
-Add any URL schemes passed to `canLaunch` as `LSApplicationQueriesSchemes` entries in your Info.plist file.
-
-Example:  
-```
-<key>LSApplicationQueriesSchemes</key>
-<array>
-  <string>https</string>
-  <string>http</string>
-</array>
-```
-
-See [`-[UIApplication canOpenURL:]`](https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl) for more details.
 
 ### Example
 
@@ -30,7 +15,7 @@ See [`-[UIApplication canOpenURL:]`](https://developer.apple.com/documentation/u
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const _url = 'https://flutter.dev';
+const String _url = 'https://flutter.dev';
 
 void main() => runApp(
       const MaterialApp(
@@ -45,8 +30,63 @@ void main() => runApp(
       ),
     );
 
-void _launchURL() async =>
-    await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
+void _launchURL() async {
+  if (!await launch(_url)) throw 'Could not launch $_url';
+}
+```
+
+See the example app for more complex examples.
+
+## Configuration
+
+### iOS
+Add any URL schemes passed to `canLaunch` as `LSApplicationQueriesSchemes` entries in your Info.plist file.
+
+Example:
+```
+<key>LSApplicationQueriesSchemes</key>
+<array>
+  <string>https</string>
+  <string>http</string>
+</array>
+```
+
+See [`-[UIApplication canOpenURL:]`](https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl) for more details.
+
+### Android
+
+Starting from API 30 Android requires package visibility configuration in your
+`AndroidManifest.xml` otherwise `canLaunch` will return `false`. A `<queries>`
+element must be added to your manifest as a child of the root element.
+
+The snippet below shows an example for an application that uses `https`, `tel`,
+and `mailto` URLs with `url_launcher`. See
+[the Android documentation](https://developer.android.com/training/package-visibility/use-cases)
+for examples of other queries.
+
+``` xml
+<queries>
+  <!-- If your app opens https URLs -->
+  <intent>
+    <action android:name="android.intent.action.VIEW" />
+    <data android:scheme="https" />
+  </intent>
+  <!-- If your app makes calls -->
+  <intent>
+    <action android:name="android.intent.action.DIAL" />
+    <data android:scheme="tel" />
+  </intent>
+  <!-- If your sends SMS messages -->
+  <intent>
+    <action android:name="android.intent.action.SENDTO" />
+    <data android:scheme="smsto" />
+  </intent>
+  <!-- If your app sends emails -->
+  <intent>
+    <action android:name="android.intent.action.SEND" />
+    <data android:mimeType="*/*" />
+  </intent>
+</queries>
 ```
 
 ## Supported URL schemes
@@ -73,39 +113,49 @@ apps installed, so can't open `tel:` or `mailto:` links.
 
 ### Encoding URLs
 
-URLs must be properly encoded, especially when including spaces or other special characters. This can be done using the [`Uri` class](https://api.dart.dev/stable/2.7.1/dart-core/Uri-class.html):
+URLs must be properly encoded, especially when including spaces or other special
+characters. This can be done using the
+[`Uri` class](https://api.dart.dev/stable/2.7.1/dart-core/Uri-class.html).
+For example:
 ```dart
-import 'dart:core';
-import 'package:url_launcher/url_launcher.dart';
+String? encodeQueryParameters(Map<String, String> params) {
+  return params.entries
+      .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+      .join('&');
+}
 
-final Uri _emailLaunchUri = Uri(
+final Uri emailLaunchUri = Uri(
   scheme: 'mailto',
   path: 'smith@example.com',
-  queryParameters: {
+  query: encodeQueryParameters(<String, String>{
     'subject': 'Example Subject & Symbols are allowed!'
-  }
+  }),
 );
 
-// ...
-
-// mailto:smith@example.com?subject=Example+Subject+%26+Symbols+are+allowed%21
-launch(_emailLaunchUri.toString());
+launch(emailLaunchUri.toString());
 ```
 
-## Handling missing URL receivers
+**Warning**: For any scheme other than `http` or `https`, you should use the
+`query` parameter and the `encodeQueryParameters` function shown above rather
+than `Uri`'s `queryParameters` constructor argument, due to
+[a bug](https://github.com/dart-lang/sdk/issues/43838) in the way `Uri`
+encodes query parameters. Using `queryParameters` will result in spaces being
+converted to `+` in many cases.
+
+### Handling missing URL receivers
 
 A particular mobile device may not be able to receive all supported URL schemes.
 For example, a tablet may not have a cellular radio and thus no support for
 launching a URL using the `sms` scheme, or a device may not have an email app
-and thus no support for launching a URL using the `email` scheme.
+and thus no support for launching a URL using the `mailto` scheme.
 
 We recommend checking which URL schemes are supported using the
 [`canLaunch`](https://pub.dev/documentation/url_launcher/latest/url_launcher/canLaunch.html)
-method prior to calling `launch`. If the `canLaunch` method returns false, as a
+in most cases. If the `canLaunch` method returns false, as a
 best practice we suggest adjusting the application UI so that the unsupported
-URL is never triggered; for example, if the `email` scheme is not supported, a
-UI button that would have sent email can be changed to redirect the user to a
-web page using a URL following the `http` scheme.
+URL is never triggered; for example, if the `mailto` scheme is not supported, a
+UI button that would have sent feedback email could be changed to instead open
+a web-based feedback form using an `https` URL.
 
 ## Browser vs In-app Handling
 By default, Android opens up a browser when handling URLs. You can pass

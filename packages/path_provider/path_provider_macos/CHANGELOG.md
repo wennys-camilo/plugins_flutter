@@ -1,3 +1,17 @@
+## 2.0.4
+
+* Switches to a package-internal implementation of the platform interface.
+
+## 2.0.3
+
+* Fixes link in README.
+
+## 2.0.2
+
+* Add Swift language version to podspec.
+* Add native unit tests.
+* Updated installation instructions in README.
+
 ## 2.0.1
 
 * Add `implements` to pubspec.yaml.
@@ -49,7 +63,7 @@
 
 ## 0.0.3+1
 
-* Make the pedantic dev_dependency explicit.
+* Make the pedantic `dev_dependency` explicit.
 
 ## 0.0.3
 
