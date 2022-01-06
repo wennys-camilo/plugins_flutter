@@ -92,6 +92,7 @@ gmaps.MapOptions _rawOptionsToGmapsOptions(Map<String, dynamic> rawOptions) {
   options.mapTypeControl = false;
   options.fullscreenControl = false;
   options.streetViewControl = false;
+  options.rotateControl = false;
 
   return options;
 }
