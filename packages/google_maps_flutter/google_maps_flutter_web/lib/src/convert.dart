@@ -93,6 +93,7 @@ gmaps.MapOptions _rawOptionsToGmapsOptions(Map<String, dynamic> rawOptions) {
   options.fullscreenControl = false;
   options.streetViewControl = false;
   options.rotateControl = false;
+  options.tilt = 0;
 
   return options;
 }
