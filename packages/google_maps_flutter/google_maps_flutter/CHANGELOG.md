@@ -1,7 +1,12 @@
-
 ## 2.2.0
 
+* Adds OS version support information to README.
+* Adds support for heatmap layers.
 * Adds options for gesture handling and tilt controls on web.
+
+## 2.1.3
+
+* Fixes iOS crash on `EXC_BAD_ACCESS KERN_PROTECTION_FAILURE` if the map frame changes long after creation.
 
 ## 2.1.2
 

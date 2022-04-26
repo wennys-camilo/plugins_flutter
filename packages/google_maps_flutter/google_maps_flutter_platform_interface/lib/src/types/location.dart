@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:ui' show hashValues;
-
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
 /// A pair of latitude and longitude coordinates, stored as degrees.
@@ -55,7 +53,11 @@ class LatLng {
   }
 
   @override
-  int get hashCode => hashValues(latitude, longitude);
+  int get hashCode => Object.hash(latitude, longitude);
+
+  /// Create a [WeightedLatLng] from this [LatLng] with the specified [weight].
+  WeightedLatLng weighted([double weight = 1.0]) =>
+      WeightedLatLng.fromLatLng(this, weight: weight);
 }
 
 /// A latitude/longitude aligned rectangle.
@@ -132,5 +134,61 @@ class LatLngBounds {
   }
 
   @override
-  int get hashCode => hashValues(southwest, northeast);
+  int get hashCode => Object.hash(southwest, northeast);
+}
+
+/// A data point entry for a heatmap.
+/// This is a geographical data point with a weight attribute.
+class WeightedLatLng {
+  /// The location of the data point.
+  final LatLng location;
+
+  /// The weighting value of the data point.
+  final double weight;
+
+  /// Creates a [WeightedLatLng] with the specified [weight]
+  WeightedLatLng(double latitude, double longitude, {this.weight = 1.0})
+      : location = LatLng(latitude, longitude);
+
+  /// Creates a [WeightedLatLng] with the specified [location] and [weight].
+  WeightedLatLng.fromLatLng(this.location, {this.weight = 1.0});
+
+  /// Converts this object to something serializable in JSON.
+  Object toJson() {
+    return <Object>[location.toJson(), weight];
+  }
+
+  /// Initialize a [WeightedLatLng] from an \[location, weight\] array.
+  static WeightedLatLng? fromJson(Object? json) {
+    if (json == null) {
+      return null;
+    }
+    assert(json is List && json.length == 2);
+    final list = json as List;
+    final latLng = LatLng.fromJson(list[0])!;
+    return WeightedLatLng(
+      latLng.latitude,
+      latLng.longitude,
+      weight: list[1],
+    );
+  }
+
+  @override
+  String toString() => '$runtimeType($location, $weight)';
+
+  @override
+  bool operator ==(Object o) {
+    return o is WeightedLatLng && o.location == location && o.weight == weight;
+  }
+
+  @override
+  int get hashCode => Object.hash(location, weight);
+}
+
+/// Convenience extensions on [LatLng] iterables.
+extension LatLngIterableExtension on Iterable<LatLng> {
+  /// Converts a [LatLng] iterable to a [WeightedLatLng] iterable with each
+  /// [WeightedLatLng] having the specified [weight].
+  Iterable<WeightedLatLng> weighted([double weight = 1.0]) =>
+      map((latLng) => latLng.weighted(weight));
 }

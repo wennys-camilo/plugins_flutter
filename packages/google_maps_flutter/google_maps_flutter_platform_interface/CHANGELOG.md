@@ -1,7 +1,12 @@
-
 ## 2.2.0
 
+* Adds support for heatmap layers.
 * Adds options for gesture handling and tilt controls on web.
+
+## 2.1.6
+
+* Migrates from `ui.hash*` to `Object.hash*`.
+* Updates minimum Flutter version to 2.5.0.
 
 ## 2.1.5
 

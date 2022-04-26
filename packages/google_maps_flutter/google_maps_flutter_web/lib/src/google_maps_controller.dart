@@ -19,6 +19,7 @@ class GoogleMapController {
   final Set<Polygon> _polygons;
   final Set<Polyline> _polylines;
   final Set<Circle> _circles;
+  final Set<Heatmap> _heatmaps;
   // The raw options passed by the user, before converting to gmaps.
   // Caching this allows us to re-create the map faithfully when needed.
   Map<String, dynamic> _rawMapOptions = <String, dynamic>{};
@@ -62,6 +63,7 @@ class GoogleMapController {
 
   // Geometry controllers, for different features of the map.
   CirclesController? _circlesController;
+  HeatmapsController? _heatmapsController;
   PolygonsController? _polygonsController;
   PolylinesController? _polylinesController;
   MarkersController? _markersController;
@@ -80,6 +82,7 @@ class GoogleMapController {
     Set<Polygon> polygons = const <Polygon>{},
     Set<Polyline> polylines = const <Polyline>{},
     Set<Circle> circles = const <Circle>{},
+    Set<Heatmap> heatmaps = const <Heatmap>{},
     Set<TileOverlay> tileOverlays = const <TileOverlay>{},
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers =
         const <Factory<OneSequenceGestureRecognizer>>{},
@@ -91,8 +94,10 @@ class GoogleMapController {
         _polygons = polygons,
         _polylines = polylines,
         _circles = circles,
+        _heatmaps = heatmaps,
         _rawMapOptions = mapOptions {
     _circlesController = CirclesController(stream: this._streamController);
+    _heatmapsController = HeatmapsController();
     _polygonsController = PolygonsController(stream: this._streamController);
     _polylinesController = PolylinesController(stream: this._streamController);
     _markersController = MarkersController(stream: this._streamController);
@@ -117,12 +122,14 @@ class GoogleMapController {
     DebugCreateMapFunction? createMap,
     MarkersController? markers,
     CirclesController? circles,
+    HeatmapsController? heatmaps,
     PolygonsController? polygons,
     PolylinesController? polylines,
   }) {
     _overrideCreateMap = createMap;
     _markersController = markers ?? _markersController;
     _circlesController = circles ?? _circlesController;
+    _heatmapsController = heatmaps ?? _heatmapsController;
     _polygonsController = polygons ?? _polygonsController;
     _polylinesController = polylines ?? _polylinesController;
   }
@@ -176,6 +183,7 @@ class GoogleMapController {
     _renderInitialGeometry(
       markers: _markers,
       circles: _circles,
+      heatmaps: _heatmaps,
       polygons: _polygons,
       polylines: _polylines,
     );
@@ -226,6 +234,8 @@ class GoogleMapController {
     // null.
     assert(_circlesController != null,
         'Cannot attach a map to a null CirclesController instance.');
+    assert(_heatmapsController != null,
+        'Cannot attach a map to a null HeatmapsController instance.');
     assert(_polygonsController != null,
         'Cannot attach a map to a null PolygonsController instance.');
     assert(_polylinesController != null,
@@ -234,6 +244,7 @@ class GoogleMapController {
         'Cannot attach a map to a null MarkersController instance.');
 
     _circlesController!.bindToMap(_mapId, map);
+    _heatmapsController!.bindToMap(_mapId, map);
     _polygonsController!.bindToMap(_mapId, map);
     _polylinesController!.bindToMap(_mapId, map);
     _markersController!.bindToMap(_mapId, map);
@@ -245,6 +256,7 @@ class GoogleMapController {
   void _renderInitialGeometry({
     Set<Marker> markers = const {},
     Set<Circle> circles = const {},
+    Set<Heatmap> heatmaps = const {},
     Set<Polygon> polygons = const {},
     Set<Polyline> polylines = const {},
   }) {
@@ -259,6 +271,7 @@ class GoogleMapController {
 
     _markersController!.addMarkers(markers);
     _circlesController!.addCircles(circles);
+    _heatmapsController!.addHeatmaps(heatmaps);
     _polygonsController!.addPolygons(polygons);
     _polylinesController!.addPolylines(polylines);
   }
@@ -355,10 +368,23 @@ class GoogleMapController {
   /// Applies [CircleUpdates] to the currently managed circles.
   void updateCircles(CircleUpdates updates) {
     assert(
-        _circlesController != null, 'Cannot update circles after dispose().');
+      _circlesController != null,
+      'Cannot update circles after dispose().',
+    );
     _circlesController?.addCircles(updates.circlesToAdd);
     _circlesController?.changeCircles(updates.circlesToChange);
     _circlesController?.removeCircles(updates.circleIdsToRemove);
+  }
+
+  /// Applies [HeatmapUpdates] to the currently managed heatmaps.
+  void updateHeatmaps(HeatmapUpdates updates) {
+    assert(
+      _heatmapsController != null,
+      'Cannot update heatmaps after dispose().',
+    );
+    _heatmapsController?.addHeatmaps(updates.heatmapsToAdd);
+    _heatmapsController?.changeHeatmaps(updates.heatmapsToChange);
+    _heatmapsController?.removeHeatmaps(updates.heatmapIdsToRemove);
   }
 
   /// Applies [PolygonUpdates] to the currently managed polygons.
@@ -417,6 +443,7 @@ class GoogleMapController {
     _widget = null;
     _googleMap = null;
     _circlesController = null;
+    _heatmapsController = null;
     _polygonsController = null;
     _polylinesController = null;
     _markersController = null;
