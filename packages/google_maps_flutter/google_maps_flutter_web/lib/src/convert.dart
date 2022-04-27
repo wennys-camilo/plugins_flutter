@@ -299,12 +299,12 @@ gmaps_visualization.HeatmapLayerOptions _heatmapOptionsFromHeatmap(
     ..data = heatmap.data
         .map(
           (e) => gmaps_visualization.WeightedLocation()
-            ..location = gmaps.LatLng(e.location.latitude, e.location.longitude)
+            ..location = gmaps.LatLng(e.latitude, e.longitude)
             ..weight = e.weight,
         )
         .toList()
     ..dissipating = heatmap.dissipating
-    ..gradient = heatmap.gradient?.map(_getCssColorWithAlpha).toList()
+    ..gradient = heatmap.gradient?.colors.map(_getCssColorWithAlpha).toList()
     ..maxIntensity = heatmap.maxIntensity
     ..opacity = heatmap.opacity
     ..radius = heatmap.radius;

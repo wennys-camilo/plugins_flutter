@@ -76,35 +76,26 @@
 
 + (NSArray<GMUWeightedLatLng *> *)toWeightedData:(NSArray *)data {
   NSMutableArray<GMUWeightedLatLng *> *weightedData = [[NSMutableArray alloc] init];
-  for (unsigned i = 0; i < [data count]; i++) {
-    GMUWeightedLatLng *weightedLatLng = [FLTGoogleMapJsonConversions toWeightedLatLng:data[i]];
+  for (NSArray *latLng in data) {
+    GMUWeightedLatLng *weightedLatLng = [FLTGoogleMapJsonConversions toWeightedLatLng:latLng];
     [weightedData addObject:weightedLatLng];
   }
 
   return weightedData;
 }
 
-+ (GMUGradient *)toGradient:(NSArray *)data {
++ (GMUGradient *)toGradient:(NSDictionary *)data {
   NSMutableArray<UIColor *> *colors = [[NSMutableArray alloc] init];
-  NSMutableArray<NSNumber *> *startPoints = [[NSMutableArray alloc] init];
-  // Starting at 0 causes rendering issues
-  double startPointInterval = 0.99 / [data count];
-  double currentStartPoint = 0.01;
 
-  for (unsigned i = 0; i < [data count]; i++) {
-    UIColor *color = [FLTGoogleMapJsonConversions toColor:data[i]];
-    [colors addObject:color];
-    [startPoints addObject:@(currentStartPoint)];
-
-    currentStartPoint += startPointInterval;
-
-    // Make sure the start point doesn't exceed the max value
-    if (currentStartPoint > 1.0) {
-      currentStartPoint = 1.0;
-    }
+  NSArray *colorData = data[@"colors"];
+  for (NSNumber *colorCode in colorData) {
+    [colors addObject:[FLTGoogleMapJsonConversions toColor:colorCode]];
   }
 
-  return [[GMUGradient alloc] initWithColors:colors startPoints:startPoints colorMapSize:1000];
+  return [[GMUGradient alloc]
+      initWithColors:colors
+         startPoints:data[@"startPoints"]
+        colorMapSize:[FLTGoogleMapJsonConversions toInt:data[@"colorMapSize"]]];
 }
 
 @end

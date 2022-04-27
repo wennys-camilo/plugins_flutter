@@ -6,119 +6,107 @@
 #import "JsonConversions.h"
 @import GoogleMapsUtils;
 
-@implementation FLTGoogleMapHeatmapController {
-  GMUHeatmapTileLayer *_heatmap;
-  GMSMapView *_mapView;
-}
-- (instancetype)initWithHeatmap:(GMUHeatmapTileLayer *)heatmap mapView:(GMSMapView *)mapView {
+@implementation FLTGoogleMapHeatmapController
+- (instancetype)initWithHeatmapTileLayer:(GMUHeatmapTileLayer *)heatmapTileLayer
+                                 mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {
-    _heatmap = heatmap;
+    _heatmapTileLayer = heatmapTileLayer;
     _mapView = mapView;
-
-    // Workaround for weird heatmap rendering compared to other platforms
-    // Context:
-    // https://github.com/googlemaps/google-maps-ios-utils/issues/143#issuecomment-343850029
-    _heatmap.minimumZoomIntensity = 0;
-    _heatmap.maximumZoomIntensity = 21;
   }
   return self;
 }
 
 - (void)removeHeatmap {
-  _heatmap.map = nil;
+  _heatmapTileLayer.map = nil;
 }
 
 - (void)clearTileCache {
-  [_heatmap clearTileCache];
+  [_heatmapTileLayer clearTileCache];
 }
 
 #pragma mark - FLTGoogleMapHeatmapOptionsSink methods
 
 - (void)setWeightedData:(NSArray<GMUWeightedLatLng *> *)weightedData {
-  _heatmap.weightedData = weightedData;
+  _heatmapTileLayer.weightedData = weightedData;
 }
 
 - (void)setGradient:(GMUGradient *)gradient {
-  _heatmap.gradient = gradient;
+  _heatmapTileLayer.gradient = gradient;
 }
 
 - (void)setOpacity:(double)opacity {
-  _heatmap.opacity = opacity;
+  _heatmapTileLayer.opacity = opacity;
 }
 
 - (void)setRadius:(int)radius {
-  _heatmap.radius = radius;
+  _heatmapTileLayer.radius = radius;
+}
+
+- (void)setMinimumZoomIntensity:(int)intensity {
+  _heatmapTileLayer.minimumZoomIntensity = intensity;
+}
+
+- (void)setMaximumZoomIntensity:(int)intensity {
+  _heatmapTileLayer.maximumZoomIntensity = intensity;
 }
 
 - (void)setMap {
-  _heatmap.map = _mapView;
+  _heatmapTileLayer.map = _mapView;
 }
 @end
 
-static int ToInt(NSNumber *data) { return [FLTGoogleMapJsonConversions toInt:data]; }
-
-static double ToDouble(NSNumber *data) { return [FLTGoogleMapJsonConversions toDouble:data]; }
-
-static NSArray<GMUWeightedLatLng *> *ToWeightedData(NSArray *data) {
-  return [FLTGoogleMapJsonConversions toWeightedData:data];
+@implementation FLTHeatmapsController
+- (instancetype)init:(GMSMapView *)mapView {
+  self = [super init];
+  if (self) {
+    _mapView = mapView;
+    _heatmapIdToController = [[NSMutableDictionary alloc] init];
+  }
+  return self;
 }
-
-static GMUGradient *ToGradient(NSArray *data) {
-  return [FLTGoogleMapJsonConversions toGradient:data];
-}
-
-static void InterpretHeatmapOptions(NSDictionary *data, id<FLTGoogleMapHeatmapOptionsSink> sink,
-                                    NSObject<FlutterPluginRegistrar> *registrar) {
+- (void)interpretOptions:(NSDictionary *)data sink:(id<FLTGoogleMapHeatmapOptionsSink>)sink {
   NSArray *weightedData = data[@"data"];
   if (weightedData != nil) {
-    [sink setWeightedData:ToWeightedData(weightedData)];
+    [sink setWeightedData:[FLTGoogleMapJsonConversions toWeightedData:weightedData]];
   }
 
-  NSArray *gradient = data[@"gradient"];
+  NSDictionary *gradient = data[@"gradient"];
   if (gradient != nil) {
-    [sink setGradient:ToGradient(gradient)];
+    [sink setGradient:[FLTGoogleMapJsonConversions toGradient:gradient]];
   }
 
   NSNumber *opacity = data[@"opacity"];
   if (opacity != nil) {
-    [sink setOpacity:ToDouble(opacity)];
+    [sink setOpacity:[FLTGoogleMapJsonConversions toDouble:opacity]];
   }
 
   NSNumber *radius = data[@"radius"];
   if (radius != nil) {
-    [sink setRadius:ToInt(radius)];
+    [sink setRadius:[FLTGoogleMapJsonConversions toInt:radius]];
+  }
+
+  NSNumber *minimumZoomIntensity = data[@"minimumZoomIntensity"];
+  if (minimumZoomIntensity != nil) {
+    [sink setMinimumZoomIntensity:[FLTGoogleMapJsonConversions toInt:minimumZoomIntensity]];
+  }
+
+  NSNumber *maximumZoomIntensity = data[@"maximumZoomIntensity"];
+  if (maximumZoomIntensity != nil) {
+    [sink setMaximumZoomIntensity:[FLTGoogleMapJsonConversions toInt:maximumZoomIntensity]];
   }
 
   // The map must be set each time for options to update
   [sink setMap];
-}
-
-@implementation FLTHeatmapsController {
-  NSMutableDictionary *_heatmapIdToController;
-  FlutterMethodChannel *_methodChannel;
-  NSObject<FlutterPluginRegistrar> *_registrar;
-  GMSMapView *_mapView;
-}
-- (instancetype)init:(FlutterMethodChannel *)methodChannel
-             mapView:(GMSMapView *)mapView
-           registrar:(NSObject<FlutterPluginRegistrar> *)registrar {
-  self = [super init];
-  if (self) {
-    _methodChannel = methodChannel;
-    _mapView = mapView;
-    _heatmapIdToController = [NSMutableDictionary dictionaryWithCapacity:1];
-    _registrar = registrar;
-  }
-  return self;
 }
 - (void)addHeatmaps:(NSArray *)heatmapsToAdd {
   for (NSDictionary *heatmap in heatmapsToAdd) {
     NSString *heatmapId = [FLTHeatmapsController getHeatmapId:heatmap];
     GMUHeatmapTileLayer *heatmapTileLayer = [[GMUHeatmapTileLayer alloc] init];
     FLTGoogleMapHeatmapController *controller =
-        [[FLTGoogleMapHeatmapController alloc] initWithHeatmap:heatmapTileLayer mapView:_mapView];
-    InterpretHeatmapOptions(heatmap, controller, _registrar);
+        [[FLTGoogleMapHeatmapController alloc] initWithHeatmapTileLayer:heatmapTileLayer
+                                                                mapView:_mapView];
+    [self interpretOptions:heatmap sink:controller];
     _heatmapIdToController[heatmapId] = controller;
   }
 }
@@ -129,12 +117,12 @@ static void InterpretHeatmapOptions(NSDictionary *data, id<FLTGoogleMapHeatmapOp
     if (!controller) {
       continue;
     }
-    InterpretHeatmapOptions(heatmap, controller, _registrar);
+    [self interpretOptions:heatmap sink:controller];
 
     [controller clearTileCache];
   }
 }
-- (void)removeHeatmapIds:(NSArray *)heatmapIdsToRemove {
+- (void)removeHeatmapsWithIds:(NSArray *)heatmapIdsToRemove {
   for (NSString *heatmapId in heatmapIdsToRemove) {
     if (!heatmapId) {
       continue;
@@ -149,7 +137,7 @@ static void InterpretHeatmapOptions(NSDictionary *data, id<FLTGoogleMapHeatmapOp
 }
 - (bool)hasHeatmapWithId:(NSString *)heatmapId {
   if (!heatmapId) {
-    return false;
+    return NO;
   }
   return _heatmapIdToController[heatmapId] != nil;
 }

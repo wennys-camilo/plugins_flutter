@@ -4,6 +4,7 @@
 
 #import "GoogleMapController.h"
 #import "FLTGoogleMapTileOverlayController.h"
+#import "GoogleMapHeatmapController.h"
 #import "JsonConversions.h"
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
@@ -103,9 +104,7 @@ static double ToDouble(NSNumber *data) { return [FLTGoogleMapJsonConversions toD
     _circlesController = [[FLTCirclesController alloc] init:_channel
                                                     mapView:_mapView
                                                   registrar:registrar];
-    _heatmapsController = [[FLTHeatmapsController alloc] init:_channel
-                                                      mapView:_mapView
-                                                    registrar:registrar];
+    _heatmapsController = [[FLTHeatmapsController alloc] init:_mapView];
     _tileOverlaysController = [[FLTTileOverlaysController alloc] init:_channel
                                                               mapView:_mapView
                                                             registrar:registrar];
@@ -328,7 +327,7 @@ static double ToDouble(NSNumber *data) { return [FLTGoogleMapJsonConversions toD
     }
     id heatmapIdsToRemove = call.arguments[@"heatmapIdsToRemove"];
     if ([heatmapIdsToRemove isKindOfClass:[NSArray class]]) {
-      [_heatmapsController removeHeatmapIds:heatmapIdsToRemove];
+      [_heatmapsController removeHeatmapsWithIds:heatmapIdsToRemove];
     }
     result(nil);
   } else if ([call.method isEqualToString:@"tileOverlays#update"]) {
