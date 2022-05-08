@@ -66,7 +66,6 @@ class Heatmap implements MapsObject<Heatmap> {
   final double? maxIntensity;
 
   /// The opacity of the heatmap, expressed as a number between 0 and 1.
-  /// Defaults to 0.6.
   final double opacity;
 
   /// The radius of influence for each data point, in pixels.
@@ -111,7 +110,7 @@ class Heatmap implements MapsObject<Heatmap> {
   /// instance.
   Heatmap clone() => copyWith(
         dataParam: List.of(data),
-        gradientParam: gradient != null ? gradient!.clone() : null,
+        gradientParam: gradient?.clone(),
       );
 
   /// Converts this object to something serializable in JSON.

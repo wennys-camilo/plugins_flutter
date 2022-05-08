@@ -1,8 +1,13 @@
 ## 2.2.0
 
-* Adds OS version support information to README.
 * Adds support for heatmap layers.
 * Adds options for gesture handling and tilt controls on web.
+* Removes unnecessary imports.
+
+## 2.1.4
+
+* Updates Android Google maps sdk version to `18.0.2`.
+* Adds OS version support information to README.
 
 ## 2.1.3
 
