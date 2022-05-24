@@ -1,7 +1,10 @@
 ## 2.2.0
 
 * Adds support for heatmap layers.
-* Adds options for gesture handling and tilt controls on web.
+
+## 2.1.7
+
+* Updates code for stricter analysis options.
 * Removes unnecessary imports.
 
 ## 2.1.6
@@ -11,7 +14,7 @@
 
 ## 2.1.5
 
-* Removes dependency on `meta`.
+Removes dependency on `meta`.
 
 ## 2.1.4
 

@@ -10,7 +10,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_example/page.dart';
 
 class HeatmapPage extends GoogleMapExampleAppPage {
-  const HeatmapPage() : super(const Icon(Icons.map), 'Heatmaps');
+  const HeatmapPage({Key? key})
+      : super(const Icon(Icons.map), 'Heatmaps', key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class HeatmapPage extends GoogleMapExampleAppPage {
 }
 
 class HeatmapBody extends StatefulWidget {
-  const HeatmapBody();
+  const HeatmapBody({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => HeatmapBodyState();
@@ -29,20 +30,20 @@ class HeatmapBodyState extends State<HeatmapBody> {
   static const LatLng sanFrancisco = LatLng(37.774546, -122.433523);
 
   List<WeightedLatLng> enabledPoints = <WeightedLatLng>[
-    WeightedLatLng(37.782, -122.447),
-    WeightedLatLng(37.782, -122.445),
-    WeightedLatLng(37.782, -122.443),
-    WeightedLatLng(37.782, -122.441),
-    WeightedLatLng(37.782, -122.439),
-    WeightedLatLng(37.782, -122.437),
-    WeightedLatLng(37.782, -122.435),
-    WeightedLatLng(37.785, -122.447),
-    WeightedLatLng(37.785, -122.445),
-    WeightedLatLng(37.785, -122.443),
-    WeightedLatLng(37.785, -122.441),
-    WeightedLatLng(37.785, -122.439),
-    WeightedLatLng(37.785, -122.437),
-    WeightedLatLng(37.785, -122.435)
+    const WeightedLatLng(37.782, -122.447),
+    const WeightedLatLng(37.782, -122.445),
+    const WeightedLatLng(37.782, -122.443),
+    const WeightedLatLng(37.782, -122.441),
+    const WeightedLatLng(37.782, -122.439),
+    const WeightedLatLng(37.782, -122.437),
+    const WeightedLatLng(37.782, -122.435),
+    const WeightedLatLng(37.785, -122.447),
+    const WeightedLatLng(37.785, -122.445),
+    const WeightedLatLng(37.785, -122.443),
+    const WeightedLatLng(37.785, -122.441),
+    const WeightedLatLng(37.785, -122.439),
+    const WeightedLatLng(37.785, -122.437),
+    const WeightedLatLng(37.785, -122.435)
   ];
 
   List<WeightedLatLng> disabledPoints = <WeightedLatLng>[];
@@ -127,14 +128,14 @@ class HeatmapBodyState extends State<HeatmapBody> {
                     Column(
                       children: <Widget>[
                         TextButton(
-                          child: const Text('Add point'),
                           onPressed:
                               disabledPoints.isNotEmpty ? _addPoint : null,
+                          child: const Text('Add point'),
                         ),
                         TextButton(
-                          child: const Text('Remove point'),
                           onPressed:
                               enabledPoints.isNotEmpty ? _removePoint : null,
+                          child: const Text('Remove point'),
                         ),
                       ],
                     )
