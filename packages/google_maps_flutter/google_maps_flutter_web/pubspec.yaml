@@ -23,7 +23,11 @@ dependencies:
     sdk: flutter
   google_maps: ^6.1.0
   google_maps_flutter_platform_interface:
-    path: ../google_maps_flutter_platform_interface
+    git:
+      url: https://github.com/Rexios80/plugins-1
+      ref: c48ace56223931723609acb24c55a1a126513cef
+      path: packages/google_maps_flutter/google_maps_flutter_platform_interface
+      
   sanitize_html: ^2.0.0
   stream_transform: ^2.0.0
 

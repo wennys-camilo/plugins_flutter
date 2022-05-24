@@ -24,7 +24,7 @@ dependencies:
   google_maps_flutter_platform_interface:
     git:
       url: https://github.com/Rexios80/plugins-1
-      ref: 129d2ddaf7b26992bc63082a41aa87d7e6f95d69
+      ref: c48ace56223931723609acb24c55a1a126513cef
       path: packages/google_maps_flutter/google_maps_flutter_platform_interface
 
 dev_dependencies:
