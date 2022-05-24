@@ -425,7 +425,7 @@ void main() {
           controller = _createController(options: <String, dynamic>{
             'mapType': 2,
             'zoomControlsEnabled': true,
-            'tiltControlsEnabled': false,
+            'fortyFiveDegreeImageryEnabled': false,
           });
           controller.debugSetOverrides(
               createMap: (_, gmaps.MapOptions options) {
@@ -464,12 +464,31 @@ void main() {
                   'disabling scroll gestures disables all gesture handling');
         });
 
-        testWidgets('translates gestureHandling option',
+        testWidgets('translates fortyFiveDegreeImageryEnabled option',
             (WidgetTester tester) async {
-          controller = _createController(options: {
-            'gestureHandling': GestureHandling.greedy.name,
+          controller = _createController(options: <String, dynamic>{
+            'fortyFiveDegreeImageryEnabled': true,
           });
-          controller.debugSetOverrides(createMap: (_, options) {
+          controller.debugSetOverrides(
+              createMap: (_, gmaps.MapOptions options) {
+            capturedOptions = options;
+            return map;
+          });
+
+          controller.init();
+
+          expect(capturedOptions, isNotNull);
+          expect(capturedOptions!.rotateControl, true);
+          expect(capturedOptions!.tilt, isNull);
+        });
+
+        testWidgets('translates webGestureHandling option',
+            (WidgetTester tester) async {
+          controller = _createController(options: <String, dynamic>{
+            'webGestureHandling': WebGestureHandling.greedy.name,
+          });
+          controller.debugSetOverrides(
+              createMap: (_, gmaps.MapOptions options) {
             capturedOptions = options;
             return map;
           });

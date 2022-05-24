@@ -1,6 +1,7 @@
 ## 2.2.0
 
 * Adds support for heatmap layers.
+* Adds options for gesture handling and tilt controls on web.
 * Fixes iOS native unit tests on M1 devices.
 * Minor fixes for new analysis options.
 

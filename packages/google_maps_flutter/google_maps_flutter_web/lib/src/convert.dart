@@ -91,18 +91,18 @@ gmaps.MapOptions _rawOptionsToGmapsOptions(Map<String, Object?> rawOptions) {
     options.styles = rawOptions['styles'] as List<gmaps.MapTypeStyle?>?;
   }
 
-  if (rawOptions['gestureHandling'] != null) {
-    options.gestureHandling = rawOptions['gestureHandling'];
+  if (rawOptions['webGestureHandling'] != null) {
+    options.gestureHandling = rawOptions['webGestureHandling'] as String?;
   } else if (rawOptions['scrollGesturesEnabled'] == false ||
       rawOptions['zoomGesturesEnabled'] == false) {
-    options.gestureHandling = GestureHandling.none.name;
+    options.gestureHandling = WebGestureHandling.none.name;
   } else {
-    options.gestureHandling = GestureHandling.auto.name;
+    options.gestureHandling = WebGestureHandling.auto.name;
   }
 
-  if (rawOptions['tiltControlsEnabled'] == false) {
-    options.rotateControl = false;
-    options.tilt = 0;
+  if (rawOptions['fortyFiveDegreeImageryEnabled'] != null) {
+    options.rotateControl =
+        rawOptions['fortyFiveDegreeImageryEnabled'] as bool?;
   }
 
   // These don't have any rawOptions entry, but they seem to be off in the native maps.

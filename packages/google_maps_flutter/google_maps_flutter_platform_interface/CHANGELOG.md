@@ -1,6 +1,7 @@
 ## 2.2.0
 
 * Adds support for heatmap layers.
+* Adds options for gesture handling and tilt controls on web.
 
 ## 2.1.7
 

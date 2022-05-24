@@ -89,7 +89,7 @@ class GoogleMap extends StatefulWidget {
     required this.initialCameraPosition,
     this.onMapCreated,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
-    this.gestureHandling,
+    this.webGestureHandling,
     this.compassEnabled = true,
     this.mapToolbarEnabled = true,
     this.cameraTargetBounds = CameraTargetBounds.unbounded,
@@ -101,7 +101,7 @@ class GoogleMap extends StatefulWidget {
     this.zoomGesturesEnabled = true,
     this.liteModeEnabled = false,
     this.tiltGesturesEnabled = true,
-    this.tiltControlsEnabled = true,
+    this.fortyFiveDegreeImageryEnabled = false,
     this.myLocationEnabled = false,
     this.myLocationButtonEnabled = true,
     this.layoutDirection,
@@ -179,11 +179,8 @@ class GoogleMap extends StatefulWidget {
   /// True if the map view should respond to tilt gestures.
   final bool tiltGesturesEnabled;
 
-  /// True if the map should show tilt controls. Web only.
-  ///
-  /// Disabling this will cause map dragging to be interrupted if the
-  /// [GoogleMap] is rebuilt while dragging.
-  final bool tiltControlsEnabled;
+  /// True if 45 degree imagery should be enabled. Web only.
+  final bool fortyFiveDegreeImageryEnabled;
 
   /// Padding to be set on map. See https://developers.google.com/maps/documentation/android-sdk/map#map_padding for more details.
   final EdgeInsets padding;
@@ -293,8 +290,8 @@ class GoogleMap extends StatefulWidget {
 
   /// This setting controls how the API handles gestures on the map. Web only.
   ///
-  /// See [GestureHandling] for more details.
-  final GestureHandling? gestureHandling;
+  /// See [WebGestureHandling] for more details.
+  final WebGestureHandling? webGestureHandling;
 
   /// Creates a [State] for this [GoogleMap].
   @override
@@ -557,7 +554,7 @@ class _GoogleMapState extends State<GoogleMap> {
 /// Configuration options for the GoogleMaps user interface.
 class _GoogleMapOptions {
   _GoogleMapOptions.fromWidget(GoogleMap map)
-      : gestureHandling = map.gestureHandling,
+      : webGestureHandling = map.webGestureHandling,
         compassEnabled = map.compassEnabled,
         mapToolbarEnabled = map.mapToolbarEnabled,
         cameraTargetBounds = map.cameraTargetBounds,
@@ -566,7 +563,7 @@ class _GoogleMapOptions {
         rotateGesturesEnabled = map.rotateGesturesEnabled,
         scrollGesturesEnabled = map.scrollGesturesEnabled,
         tiltGesturesEnabled = map.tiltGesturesEnabled,
-        tiltControlsEnabled = map.tiltControlsEnabled,
+        fortyFiveDegreeImageryEnabled = map.fortyFiveDegreeImageryEnabled,
         trackCameraPosition = map.onCameraMove != null,
         zoomControlsEnabled = map.zoomControlsEnabled,
         zoomGesturesEnabled = map.zoomGesturesEnabled,
@@ -579,7 +576,7 @@ class _GoogleMapOptions {
         buildingsEnabled = map.buildingsEnabled,
         assert(!map.liteModeEnabled || Platform.isAndroid);
 
-  final GestureHandling? gestureHandling;
+  final WebGestureHandling? webGestureHandling;
 
   final bool compassEnabled;
 
@@ -597,7 +594,7 @@ class _GoogleMapOptions {
 
   final bool tiltGesturesEnabled;
 
-  final bool tiltControlsEnabled;
+  final bool fortyFiveDegreeImageryEnabled;
 
   final bool trackCameraPosition;
 
@@ -621,7 +618,7 @@ class _GoogleMapOptions {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'gestureHandling': gestureHandling?.name,
+      'webGestureHandling': webGestureHandling?.name,
       'compassEnabled': compassEnabled,
       'mapToolbarEnabled': mapToolbarEnabled,
       'cameraTargetBounds': cameraTargetBounds.toJson(),
@@ -630,7 +627,7 @@ class _GoogleMapOptions {
       'rotateGesturesEnabled': rotateGesturesEnabled,
       'scrollGesturesEnabled': scrollGesturesEnabled,
       'tiltGesturesEnabled': tiltGesturesEnabled,
-      'tiltControlsEnabled': tiltControlsEnabled,
+      'fortyFiveDegreeImageryEnabled': fortyFiveDegreeImageryEnabled,
       'zoomControlsEnabled': zoomControlsEnabled,
       'zoomGesturesEnabled': zoomGesturesEnabled,
       'liteModeEnabled': liteModeEnabled,
