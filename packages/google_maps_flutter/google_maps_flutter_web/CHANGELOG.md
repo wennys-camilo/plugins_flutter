@@ -1,5 +1,6 @@
 ## 0.4.1
 
+* Adds support for heatmap layers.
 * Adds options for gesture handling and tilt controls.
 
 ## 0.4.0

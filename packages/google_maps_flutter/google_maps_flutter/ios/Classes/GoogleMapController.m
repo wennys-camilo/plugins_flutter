@@ -5,6 +5,7 @@
 #import "GoogleMapController.h"
 #import "FLTGoogleMapJSONConversions.h"
 #import "FLTGoogleMapTileOverlayController.h"
+#import "GoogleMapHeatmapController.h"
 
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
@@ -48,6 +49,7 @@
 @property(nonatomic, strong) FLTPolygonsController *polygonsController;
 @property(nonatomic, strong) FLTPolylinesController *polylinesController;
 @property(nonatomic, strong) FLTCirclesController *circlesController;
+@property(nonatomic, strong) FLTHeatmapsController *heatmapsController;
 @property(nonatomic, strong) FLTTileOverlaysController *tileOverlaysController;
 
 @end
@@ -99,6 +101,7 @@
     _circlesController = [[FLTCirclesController alloc] init:_channel
                                                     mapView:_mapView
                                                   registrar:registrar];
+    _heatmapsController = [[FLTHeatmapsController alloc] init:_mapView];
     _tileOverlaysController = [[FLTTileOverlaysController alloc] init:_channel
                                                               mapView:_mapView
                                                             registrar:registrar];
@@ -117,6 +120,10 @@
     id circlesToAdd = args[@"circlesToAdd"];
     if ([circlesToAdd isKindOfClass:[NSArray class]]) {
       [_circlesController addCircles:circlesToAdd];
+    }
+    id heatmapsToAdd = args[@"heatmapsToAdd"];
+    if ([heatmapsToAdd isKindOfClass:[NSArray class]]) {
+      [_heatmapsController addHeatmaps:heatmapsToAdd];
     }
     id tileOverlaysToAdd = args[@"tileOverlaysToAdd"];
     if ([tileOverlaysToAdd isKindOfClass:[NSArray class]]) {
@@ -308,6 +315,20 @@
     id circleIdsToRemove = call.arguments[@"circleIdsToRemove"];
     if ([circleIdsToRemove isKindOfClass:[NSArray class]]) {
       [self.circlesController removeCircleWithIdentifiers:circleIdsToRemove];
+    }
+    result(nil);
+  } else if ([call.method isEqualToString:@"heatmaps#update"]) {
+    id heatmapsToAdd = call.arguments[@"heatmapsToAdd"];
+    if ([heatmapsToAdd isKindOfClass:[NSArray class]]) {
+      [_heatmapsController addHeatmaps:heatmapsToAdd];
+    }
+    id heatmapsToChange = call.arguments[@"heatmapsToChange"];
+    if ([heatmapsToChange isKindOfClass:[NSArray class]]) {
+      [_heatmapsController changeHeatmaps:heatmapsToChange];
+    }
+    id heatmapIdsToRemove = call.arguments[@"heatmapIdsToRemove"];
+    if ([heatmapIdsToRemove isKindOfClass:[NSArray class]]) {
+      [_heatmapsController removeHeatmapsWithIds:heatmapIdsToRemove];
     }
     result(nil);
   } else if ([call.method isEqualToString:@"tileOverlays#update"]) {

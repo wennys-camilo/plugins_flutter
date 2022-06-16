@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -20,6 +21,7 @@ class FakePlatformGoogleMap {
     updatePolygons(params);
     updatePolylines(params);
     updateCircles(params);
+    updateHeatmaps(params);
     updateTileOverlays(Map.castFrom<dynamic, dynamic, String, dynamic>(params));
   }
 
@@ -85,6 +87,12 @@ class FakePlatformGoogleMap {
 
   Set<Circle> circlesToChange = <Circle>{};
 
+  Set<HeatmapId> heatmapIdsToRemove = <HeatmapId>{};
+
+  Set<Heatmap> heatmapsToAdd = <Heatmap>{};
+
+  Set<Heatmap> heatmapsToChange = <Heatmap>{};
+
   Set<TileOverlayId> tileOverlayIdsToRemove = <TileOverlayId>{};
 
   Set<TileOverlay> tileOverlaysToAdd = <TileOverlay>{};
@@ -111,6 +119,9 @@ class FakePlatformGoogleMap {
         return Future<void>.sync(() {});
       case 'circles#update':
         updateCircles(call.arguments as Map<dynamic, dynamic>?);
+        return Future<void>.sync(() {});
+      case 'heatmaps#update':
+        updateHeatmaps(call.arguments as Map<dynamic, dynamic>?);
         return Future<void>.sync(() {});
       default:
         return Future<void>.sync(() {});
@@ -288,6 +299,16 @@ class FakePlatformGoogleMap {
     circlesToChange = _deserializeCircles(circleUpdates['circlesToChange']);
   }
 
+  void updateHeatmaps(Map<dynamic, dynamic>? heatmapUpdates) {
+    if (heatmapUpdates == null) {
+      return;
+    }
+    heatmapsToAdd = _deserializeHeatmaps(heatmapUpdates['heatmapsToAdd']);
+    heatmapIdsToRemove = _deserializeHeatmapIds(
+        heatmapUpdates['heatmapIdsToRemove'] as List<dynamic>?);
+    heatmapsToChange = _deserializeHeatmaps(heatmapUpdates['heatmapsToChange']);
+  }
+
   void updateTileOverlays(Map<String, dynamic> updateTileOverlayUpdates) {
     if (updateTileOverlayUpdates == null) {
       return;
@@ -339,6 +360,66 @@ class FakePlatformGoogleMap {
       result.add(Circle(
         circleId: CircleId(circleId),
         visible: visible,
+        radius: radius,
+      ));
+    }
+
+    return result;
+  }
+
+  Set<HeatmapId> _deserializeHeatmapIds(List<dynamic>? heatmapIds) {
+    if (heatmapIds == null) {
+      return <HeatmapId>{};
+    }
+    return heatmapIds
+        .map(
+          (dynamic heatmapId) => HeatmapId(heatmapId as String),
+        )
+        .toSet();
+  }
+
+  Set<Heatmap> _deserializeHeatmaps(dynamic heatmaps) {
+    if (heatmaps == null) {
+      return <Heatmap>{};
+    }
+    final List<dynamic> heatmapsData = heatmaps as List<dynamic>;
+    final Set<Heatmap> result = <Heatmap>{};
+    for (final Map<dynamic, dynamic> heatmapData
+        in heatmapsData.cast<Map<dynamic, dynamic>>()) {
+      final String heatmapId = heatmapData['heatmapId'] as String;
+
+      final List<dynamic> dataData = heatmapData['data'] as List<dynamic>;
+      final List<WeightedLatLng> data =
+          dataData.map((dynamic e) => WeightedLatLng.fromJson(e)!).toList();
+
+      final bool dissipating = heatmapData['dissipating'] as bool;
+
+      final Map<String, dynamic>? gradientData =
+          heatmapData['gradient'] as Map<String, dynamic>?;
+      final HeatmapGradient? gradient = gradientData != null
+          ? HeatmapGradient(
+              colors: (gradientData['colors'] as List<dynamic>)
+                  .cast<int>()
+                  .map((int e) => Color(e))
+                  .toList(),
+              startPoints: (gradientData['startPoints'] as List<dynamic>)
+                  .cast<double>()
+                  .toList(),
+              colorMapSize: gradientData['colorMapSize'] as int,
+            )
+          : null;
+
+      final double? maxIntensity = heatmapData['maxIntensity'] as double?;
+      final double opacity = heatmapData['opacity'] as double;
+      final int radius = heatmapData['radius'] as int;
+
+      result.add(Heatmap(
+        heatmapId: HeatmapId(heatmapId),
+        data: data,
+        dissipating: dissipating,
+        gradient: gradient,
+        maxIntensity: maxIntensity,
+        opacity: opacity,
         radius: radius,
       ));
     }

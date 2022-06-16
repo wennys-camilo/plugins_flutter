@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #import <Flutter/Flutter.h>
+#import <Foundation/Foundation.h>
 #import <GoogleMaps/GoogleMaps.h>
+@import GoogleMapsUtils;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (GMSCoordinateBounds *)coordinateBoundsFromLatLongs:(NSArray *)latlongs;
 + (GMSMapViewType)mapViewTypeFromTypeValue:(NSNumber *)value;
 + (nullable GMSCameraUpdate *)cameraUpdateFromChannelValue:(NSArray *)channelValue;
++ (GMUWeightedLatLng *)toWeightedLatLng:(NSArray *)data;
++ (NSArray<GMUWeightedLatLng *> *)toWeightedData:(NSArray *)data;
++ (GMUGradient *)toGradient:(NSDictionary *)data;
 
 @end
 
