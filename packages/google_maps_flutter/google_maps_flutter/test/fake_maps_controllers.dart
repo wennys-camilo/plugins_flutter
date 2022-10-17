@@ -4,7 +4,6 @@
 
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -13,8 +12,7 @@ class FakePlatformGoogleMap {
   FakePlatformGoogleMap(int id, Map<dynamic, dynamic> params)
       : cameraPosition =
             CameraPosition.fromMap(params['initialCameraPosition']),
-        channel = MethodChannel(
-            'plugins.flutter.io/google_maps_$id', const StandardMethodCodec()) {
+        channel = MethodChannel('plugins.flutter.io/google_maps_$id') {
     channel.setMockMethodCallHandler(onMethodCall);
     updateOptions(params['options'] as Map<dynamic, dynamic>);
     updateMarkers(params);
@@ -396,18 +394,28 @@ class FakePlatformGoogleMap {
 
       final Map<String, dynamic>? gradientData =
           heatmapData['gradient'] as Map<String, dynamic>?;
-      final HeatmapGradient? gradient = gradientData != null
-          ? HeatmapGradient(
-              colors: (gradientData['colors'] as List<dynamic>)
-                  .cast<int>()
-                  .map((int e) => Color(e))
-                  .toList(),
-              startPoints: (gradientData['startPoints'] as List<dynamic>)
-                  .cast<double>()
-                  .toList(),
-              colorMapSize: gradientData['colorMapSize'] as int,
-            )
-          : null;
+      final HeatmapGradient? gradient;
+      if (gradientData != null) {
+        final List<Color> colors = (gradientData['colors'] as List<dynamic>)
+            .cast<int>()
+            .map((int e) => Color(e))
+            .toList();
+        final List<double> startPoints =
+            (gradientData['startPoints'] as List<dynamic>)
+                .cast<double>()
+                .toList();
+
+        final List<HeatmapGradientColor> gradientColors =
+            <HeatmapGradientColor>[];
+        for (int i = 0; i < colors.length; i++) {
+          gradientColors.add(HeatmapGradientColor(colors[i], startPoints[i]));
+        }
+
+        gradient = HeatmapGradient(gradientColors,
+            colorMapSize: gradientData['colorMapSize'] as int);
+      } else {
+        gradient = null;
+      }
 
       final double? maxIntensity = heatmapData['maxIntensity'] as double?;
       final double opacity = heatmapData['opacity'] as double;

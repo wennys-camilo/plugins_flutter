@@ -80,9 +80,6 @@ gmaps.MapOptions _configurationAndStyleToGmapsOptions(
 
   if (configuration.webGestureHandling != null) {
     options.gestureHandling = configuration.webGestureHandling!.name;
-  } else if (configuration.scrollGesturesEnabled == false ||
-      configuration.zoomGesturesEnabled == false) {
-    options.gestureHandling = WebGestureHandling.none.name;
   } else {
     options.gestureHandling = WebGestureHandling.auto.name;
   }
@@ -242,14 +239,25 @@ gmaps.InfoWindowOptions? _infoWindowOptionsFromMarker(Marker marker) {
   // and the marker.infoWindow.anchor property.
 }
 
-// Computes the options for a new [gmaps.Marker] from an incoming set of options
-// [marker], and the existing marker registered with the map: [currentMarker].
-// Preserves the position from the [currentMarker], if set.
-gmaps.MarkerOptions _markerOptionsFromMarker(
-  Marker marker,
-  gmaps.Marker? currentMarker,
-) {
-  final List<Object?> iconConfig = marker.icon.toJson() as List<Object?>;
+// Attempts to extract a [gmaps.Size] from `iconConfig[sizeIndex]`.
+gmaps.Size? _gmSizeFromIconConfig(List<Object?> iconConfig, int sizeIndex) {
+  gmaps.Size? size;
+  if (iconConfig.length >= sizeIndex + 1) {
+    final List<Object?>? rawIconSize = iconConfig[sizeIndex] as List<Object?>?;
+    if (rawIconSize != null) {
+      size = gmaps.Size(
+        rawIconSize[0] as num?,
+        rawIconSize[1] as num?,
+      );
+    }
+  }
+  return size;
+}
+
+// Converts a [BitmapDescriptor] into a [gmaps.Icon] that can be used in Markers.
+gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
+  final List<Object?> iconConfig = bitmapDescriptor.toJson() as List<Object?>;
+
   gmaps.Icon? icon;
 
   if (iconConfig != null) {
@@ -257,17 +265,11 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
       assert(iconConfig.length >= 2);
       // iconConfig[2] contains the DPIs of the screen, but that information is
       // already encoded in the iconConfig[1]
-
       icon = gmaps.Icon()
         ..url = ui.webOnlyAssetManager.getAssetUrl(iconConfig[1]! as String);
 
-      // iconConfig[3] may contain the [width, height] of the image, if passed!
-      if (iconConfig.length >= 4 && iconConfig[3] != null) {
-        final List<Object?> rawIconSize = iconConfig[3]! as List<Object?>;
-        final gmaps.Size size = gmaps.Size(
-          rawIconSize[0] as num?,
-          rawIconSize[1] as num?,
-        );
+      final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
+      if (size != null) {
         icon
           ..size = size
           ..scaledSize = size;
@@ -278,8 +280,26 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
       // Create a Blob from bytes, but let the browser figure out the encoding
       final Blob blob = Blob(<dynamic>[bytes]);
       icon = gmaps.Icon()..url = Url.createObjectUrlFromBlob(blob);
+
+      final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 2);
+      if (size != null) {
+        icon
+          ..size = size
+          ..scaledSize = size;
+      }
     }
   }
+
+  return icon;
+}
+
+// Computes the options for a new [gmaps.Marker] from an incoming set of options
+// [marker], and the existing marker registered with the map: [currentMarker].
+// Preserves the position from the [currentMarker], if set.
+gmaps.MarkerOptions _markerOptionsFromMarker(
+  Marker marker,
+  gmaps.Marker? currentMarker,
+) {
   return gmaps.MarkerOptions()
     ..position = currentMarker?.position ??
         gmaps.LatLng(
@@ -291,7 +311,7 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
     ..visible = marker.visible
     ..opacity = marker.alpha
     ..draggable = marker.draggable
-    ..icon = icon;
+    ..icon = _gmIconFromBitmapDescriptor(marker.icon);
   // TODO(ditman): Compute anchor properly, otherwise infowindows attach to the wrong spot.
   // Flat and Rotation are not supported directly on the web.
 }
@@ -318,13 +338,14 @@ visualization.HeatmapLayerOptions _heatmapOptionsFromHeatmap(
         ..data = heatmap.data
             .map(
               (WeightedLatLng e) => visualization.WeightedLocation()
-                ..location = gmaps.LatLng(e.latitude, e.longitude)
+                ..location = gmaps.LatLng(e.point.latitude, e.point.longitude)
                 ..weight = e.weight,
             )
             .toList()
         ..dissipating = heatmap.dissipating
-        ..gradient =
-            heatmap.gradient?.colors.map(_getCssColorWithAlpha).toList()
+        ..gradient = heatmap.gradient?.colors
+            .map((HeatmapGradientColor e) => _getCssColorWithAlpha(e.color))
+            .toList()
         ..maxIntensity = heatmap.maxIntensity
         ..opacity = heatmap.opacity
         ..radius = heatmap.radius;

@@ -4,7 +4,7 @@ publish_to: none
 
 environment:
   sdk: ">=2.14.0 <3.0.0"
-  flutter: ">=2.8.0"
+  flutter: ">=2.10.0"
 
 dependencies:
   cupertino_icons: ^0.1.0
@@ -18,12 +18,18 @@ dependencies:
     # The example app is bundled with the plugin so we use a path dependency on
     # the parent directory to use the current plugin's version.
     path: ../
+  google_maps_flutter_android:
+    path: ../../google_maps_flutter_android
+  google_maps_flutter_platform_interface:
+    path: ../../google_maps_flutter_platform_interface
   google_maps_flutter_web:
     path: ../../google_maps_flutter_web
 
 dev_dependencies:
   espresso: ^0.1.0+2
   flutter_driver:
+    sdk: flutter
+  flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
@@ -32,3 +38,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+
+# FOR TESTING ONLY. DO NOT MERGE.
+dependency_overrides:
+  google_maps_flutter_android:
+    path: ../../google_maps_flutter_android
+  google_maps_flutter_ios:
+    path: ../../google_maps_flutter_ios
+  google_maps_flutter_platform_interface:
+    path: ../../google_maps_flutter_platform_interface

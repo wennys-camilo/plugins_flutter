@@ -1,6 +1,16 @@
-## NEXT
+## 2.2.0
 
-* Removes unnecessary imports.
+* Makes `XTypeGroup`'s constructor constant.
+
+## 2.1.1
+
+* Updates imports for `prefer_relative_imports`.
+* Updates minimum Flutter version to 2.10.
+
+## 2.1.0
+
+* Adds `allowsAny` to `XTypeGroup` as a simple and future-proof way of identifying
+  wildcard groups.
 
 ## 2.0.4
 

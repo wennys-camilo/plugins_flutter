@@ -404,7 +404,7 @@ void main() {
       final Set<Heatmap> updatedHeatmaps = <Heatmap>{
         const Heatmap(
           heatmapId: HeatmapId('1'),
-          data: <WeightedLatLng>[WeightedLatLng(0, 0)],
+          data: <WeightedLatLng>[WeightedLatLng(LatLng(0, 0))],
         ),
       };
       controller.changeHeatmaps(updatedHeatmaps);
@@ -444,8 +444,9 @@ void main() {
         Heatmap(
           heatmapId: const HeatmapId('1'),
           gradient: HeatmapGradient(
-            colors: const <Color>[Color(0xFFFABADA)],
-            startPoints: const <double>[0],
+            const <HeatmapGradientColor>[
+              HeatmapGradientColor(Color(0xFFFABADA), 0)
+            ],
           ),
         ),
       };

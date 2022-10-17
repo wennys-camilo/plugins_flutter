@@ -21,11 +21,11 @@ import 'google_maps_controller_test.mocks.dart';
 const double _acceptableDelta = 0.0000000001;
 
 @GenerateMocks(<Type>[], customMocks: <MockSpec<dynamic>>[
-  MockSpec<CirclesController>(returnNullOnMissingStub: true),
-  MockSpec<HeatmapsController>(returnNullOnMissingStub: true),
-  MockSpec<PolygonsController>(returnNullOnMissingStub: true),
-  MockSpec<PolylinesController>(returnNullOnMissingStub: true),
-  MockSpec<MarkersController>(returnNullOnMissingStub: true),
+  MockSpec<CirclesController>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<HeatmapsController>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<PolygonsController>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<PolylinesController>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<MarkersController>(onMissingStub: OnMissingStub.returnDefault),
 ])
 
 /// Test Google Map Controller
@@ -38,7 +38,7 @@ void main() {
     late StreamController<MapEvent<Object?>> stream;
 
     // Creates a controller with the default mapId and stream controller, and any `options` needed.
-    GoogleMapController _createController({
+    GoogleMapController createController({
       CameraPosition initialCameraPosition =
           const CameraPosition(target: LatLng(0, 0)),
       MapObjects mapObjects = const MapObjects(),
@@ -61,7 +61,7 @@ void main() {
 
     group('construct/dispose', () {
       setUp(() {
-        controller = _createController();
+        controller = createController();
       });
 
       testWidgets('constructor creates widget', (WidgetTester tester) async {
@@ -240,7 +240,7 @@ void main() {
       });
 
       testWidgets('listens to map events', (WidgetTester tester) async {
-        controller = _createController();
+        controller = createController();
         controller.debugSetOverrides(
           createMap: (_, __) => map,
           circles: circles,
@@ -280,7 +280,7 @@ void main() {
 
       testWidgets("binds geometry controllers to map's",
           (WidgetTester tester) async {
-        controller = _createController();
+        controller = createController();
         controller.debugSetOverrides(
           createMap: (_, __) => map,
           circles: circles,
@@ -300,7 +300,7 @@ void main() {
       });
 
       testWidgets('renders initial geometry', (WidgetTester tester) async {
-        controller = _createController(
+        controller = createController(
             mapObjects: MapObjects(circles: <Circle>{
           const Circle(
             circleId: CircleId('circle-1'),
@@ -310,10 +310,10 @@ void main() {
           const Heatmap(
             heatmapId: HeatmapId('heatmap-1'),
             data: <WeightedLatLng>[
-              WeightedLatLng(43.355114, -5.851333),
-              WeightedLatLng(43.354797, -5.851860),
-              WeightedLatLng(43.354469, -5.851318),
-              WeightedLatLng(43.354762, -5.850824),
+              WeightedLatLng(LatLng(43.355114, -5.851333)),
+              WeightedLatLng(LatLng(43.354797, -5.851860)),
+              WeightedLatLng(LatLng(43.354469, -5.851318)),
+              WeightedLatLng(LatLng(43.354762, -5.850824)),
             ],
           ),
         }, markers: <Marker>{
@@ -395,7 +395,7 @@ void main() {
 
       testWidgets('empty infoWindow does not create InfoWindow instance.',
           (WidgetTester tester) async {
-        controller = _createController(
+        controller = createController(
             mapObjects: MapObjects(markers: <Marker>{
           const Marker(markerId: MarkerId('marker-1')),
         }));
@@ -418,13 +418,12 @@ void main() {
           capturedOptions = null;
         });
         testWidgets('translates initial options', (WidgetTester tester) async {
-          controller = _createController(
-            mapConfiguration: const MapConfiguration(
-              mapType: MapType.satellite,
-              zoomControlsEnabled: true,
-              fortyFiveDegreeImageryEnabled: false,
-            ),
-          );
+          controller = createController(
+              mapConfiguration: const MapConfiguration(
+            mapType: MapType.satellite,
+            zoomControlsEnabled: true,
+            fortyFiveDegreeImageryEnabled: false,
+          ));
           controller.debugSetOverrides(
               createMap: (_, gmaps.MapOptions options) {
             capturedOptions = options;
@@ -443,33 +442,13 @@ void main() {
           expect(capturedOptions!.tilt, 0);
         });
 
-        testWidgets('disables gestureHandling with scrollGesturesEnabled false',
-            (WidgetTester tester) async {
-          controller = _createController(
-              mapConfiguration: const MapConfiguration(
-            scrollGesturesEnabled: false,
-          ));
-          controller.debugSetOverrides(
-              createMap: (_, gmaps.MapOptions options) {
-            capturedOptions = options;
-            return map;
-          });
-
-          controller.init();
-
-          expect(capturedOptions, isNotNull);
-          expect(capturedOptions!.gestureHandling, 'none',
-              reason:
-                  'disabling scroll gestures disables all gesture handling');
-        });
-
         testWidgets('translates fortyFiveDegreeImageryEnabled option',
             (WidgetTester tester) async {
-          controller = _createController(
-            mapConfiguration: const MapConfiguration(
-              fortyFiveDegreeImageryEnabled: true,
-            ),
-          );
+          controller = createController(
+              mapConfiguration: const MapConfiguration(
+            scrollGesturesEnabled: false,
+            fortyFiveDegreeImageryEnabled: true,
+          ));
           controller.debugSetOverrides(
               createMap: (_, gmaps.MapOptions options) {
             capturedOptions = options;
@@ -485,11 +464,11 @@ void main() {
 
         testWidgets('translates webGestureHandling option',
             (WidgetTester tester) async {
-          controller = _createController(
-            mapConfiguration: const MapConfiguration(
-              webGestureHandling: WebGestureHandling.greedy,
-            ),
-          );
+          controller = createController(
+              mapConfiguration: const MapConfiguration(
+            zoomGesturesEnabled: false,
+            webGestureHandling: WebGestureHandling.greedy,
+          ));
           controller.debugSetOverrides(
               createMap: (_, gmaps.MapOptions options) {
             capturedOptions = options;
@@ -502,34 +481,12 @@ void main() {
           expect(capturedOptions!.gestureHandling, 'greedy');
         });
 
-        testWidgets('disables gestureHandling with zoomGesturesEnabled false',
-            (WidgetTester tester) async {
-          controller = _createController(
-              mapConfiguration: const MapConfiguration(
-            zoomGesturesEnabled: false,
-          ));
-          controller.debugSetOverrides(
-              createMap: (_, gmaps.MapOptions options) {
-            capturedOptions = options;
-            return map;
-          });
-
-          controller.init();
-
-          expect(capturedOptions, isNotNull);
-          expect(capturedOptions!.gestureHandling, 'none',
-              reason:
-                  'disabling scroll gestures disables all gesture handling');
-        });
-
         testWidgets('sets initial position when passed',
             (WidgetTester tester) async {
-          controller = _createController(
+          controller = createController(
             initialCameraPosition: const CameraPosition(
               target: LatLng(43.308, -5.6910),
               zoom: 12,
-              bearing: 0,
-              tilt: 0,
             ),
           );
 
@@ -549,14 +506,14 @@ void main() {
 
       group('Traffic Layer', () {
         testWidgets('by default is disabled', (WidgetTester tester) async {
-          controller = _createController();
+          controller = createController();
           controller.init();
           expect(controller.trafficLayer, isNull);
         });
 
         testWidgets('initializes with traffic layer',
             (WidgetTester tester) async {
-          controller = _createController(
+          controller = createController(
               mapConfiguration: const MapConfiguration(
             trafficEnabled: true,
           ));
@@ -578,7 +535,7 @@ void main() {
             ..zoom = 10
             ..center = gmaps.LatLng(0, 0),
         );
-        controller = _createController();
+        controller = createController();
         controller.debugSetOverrides(createMap: (_, __) => map);
         controller.init();
       });
@@ -652,7 +609,7 @@ void main() {
     // These are the methods that get forwarded to other controllers, so we just verify calls.
     group('Pass-through methods', () {
       setUp(() {
-        controller = _createController();
+        controller = createController();
       });
 
       testWidgets('updateCircles', (WidgetTester tester) async {

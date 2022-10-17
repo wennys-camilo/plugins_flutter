@@ -9,12 +9,12 @@ void main() {
   group('XTypeGroup', () {
     test('toJSON() creates correct map', () {
       const String label = 'test group';
-      final List<String> extensions = <String>['txt', 'jpg'];
-      final List<String> mimeTypes = <String>['text/plain'];
-      final List<String> macUTIs = <String>['public.plain-text'];
-      final List<String> webWildCards = <String>['image/*'];
+      const List<String> extensions = <String>['txt', 'jpg'];
+      const List<String> mimeTypes = <String>['text/plain'];
+      const List<String> macUTIs = <String>['public.plain-text'];
+      const List<String> webWildCards = <String>['image/*'];
 
-      final XTypeGroup group = XTypeGroup(
+      const XTypeGroup group = XTypeGroup(
         label: label,
         extensions: extensions,
         mimeTypes: mimeTypes,
@@ -31,7 +31,7 @@ void main() {
     });
 
     test('A wildcard group can be created', () {
-      final XTypeGroup group = XTypeGroup(
+      const XTypeGroup group = XTypeGroup(
         label: 'Any',
       );
 
@@ -40,11 +40,40 @@ void main() {
       expect(jsonMap['mimeTypes'], null);
       expect(jsonMap['macUTIs'], null);
       expect(jsonMap['webWildCards'], null);
+      expect(group.allowsAny, true);
+    });
+
+    test('allowsAny treats empty arrays the same as null', () {
+      const XTypeGroup group = XTypeGroup(
+        label: 'Any',
+        extensions: <String>[],
+        mimeTypes: <String>[],
+        macUTIs: <String>[],
+        webWildCards: <String>[],
+      );
+
+      expect(group.allowsAny, true);
+    });
+
+    test('allowsAny returns false if anything is set', () {
+      const XTypeGroup extensionOnly =
+          XTypeGroup(label: 'extensions', extensions: <String>['txt']);
+      const XTypeGroup mimeOnly =
+          XTypeGroup(label: 'mime', mimeTypes: <String>['text/plain']);
+      const XTypeGroup utiOnly =
+          XTypeGroup(label: 'utis', macUTIs: <String>['public.text']);
+      const XTypeGroup webOnly =
+          XTypeGroup(label: 'web', webWildCards: <String>['.txt']);
+
+      expect(extensionOnly.allowsAny, false);
+      expect(mimeOnly.allowsAny, false);
+      expect(utiOnly.allowsAny, false);
+      expect(webOnly.allowsAny, false);
     });
 
     test('Leading dots are removed from extensions', () {
-      final List<String> extensions = <String>['.txt', '.jpg'];
-      final XTypeGroup group = XTypeGroup(extensions: extensions);
+      const List<String> extensions = <String>['.txt', '.jpg'];
+      const XTypeGroup group = XTypeGroup(extensions: extensions);
 
       expect(group.extensions, <String>['txt', 'jpg']);
     });
