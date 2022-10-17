@@ -1,6 +1,7 @@
 ## 2.3.0
 
 * Adds support for heatmap layers.
+* Adds options for gesture handling and tilt controls on web.
 * Updates code for `no_leading_underscores_for_local_identifiers` lint.
 
 ## 2.2.1
