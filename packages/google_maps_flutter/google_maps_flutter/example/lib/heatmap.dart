@@ -90,31 +90,30 @@ class HeatmapBodyState extends State<HeatmapBody> {
                     heatmapId: const HeatmapId('test'),
                     data: enabledPoints,
                     gradient: HeatmapGradient(
-                      <HeatmapGradientColor>[
-                        // Web and Android need a first color with 0 alpha.
-                        // On iOS, this causes rendering issues.
-                        if (!(defaultTargetPlatform == TargetPlatform.iOS))
-                          const HeatmapGradientColor(
+                      const <HeatmapGradientColor>[
+                        // Web needs a first color with 0 alpha
+                        if (kIsWeb)
+                          HeatmapGradientColor(
                             Color.fromARGB(0, 0, 255, 255),
                             0,
                           ),
-                        const HeatmapGradientColor(
+                        HeatmapGradientColor(
                           Color.fromARGB(255, 0, 255, 255),
                           0.2,
                         ),
-                        const HeatmapGradientColor(
+                        HeatmapGradientColor(
                           Color.fromARGB(255, 0, 63, 255),
                           0.4,
                         ),
-                        const HeatmapGradientColor(
+                        HeatmapGradientColor(
                           Color.fromARGB(255, 0, 0, 191),
                           0.6,
                         ),
-                        const HeatmapGradientColor(
+                        HeatmapGradientColor(
                           Color.fromARGB(255, 63, 0, 91),
                           0.8,
                         ),
-                        const HeatmapGradientColor(
+                        HeatmapGradientColor(
                           Color.fromARGB(255, 255, 0, 0),
                           1,
                         ),
@@ -122,7 +121,11 @@ class HeatmapBodyState extends State<HeatmapBody> {
                     ),
                     maxIntensity: 1,
                     // Radius behaves differently on web and Android/iOS.
-                    radius: kIsWeb ? 10 : 20,
+                    radius: kIsWeb
+                        ? 10
+                        : defaultTargetPlatform == TargetPlatform.android
+                            ? 20
+                            : 40,
                   )
                 }),
           ),
