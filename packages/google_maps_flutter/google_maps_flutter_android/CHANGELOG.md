@@ -1,3 +1,7 @@
+## 2.5.0
+
+* Adds support for heatmap layers.
+
 ## 2.4.0
 
 * Adds the ability to request a specific map renderer.

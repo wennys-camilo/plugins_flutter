@@ -1,5 +1,6 @@
 ## 0.4.1
 
+* Adds support for heatmap layers.
 * Adds options for gesture handling and tilt controls.
 * Updates code for `no_leading_underscores_for_local_identifiers` lint.
 

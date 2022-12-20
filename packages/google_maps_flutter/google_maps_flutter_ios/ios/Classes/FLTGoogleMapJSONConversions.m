@@ -141,4 +141,40 @@
   }
   return nil;
 }
+
++ (GMUWeightedLatLng *)weightedLatLngFromArray:(NSArray *)data {
+  NSAssert(data.count == 2, @"WeightedLatLng data must have length of 2");
+  if (data.count != 2) {
+    return nil;
+  }
+  return [[GMUWeightedLatLng alloc]
+      initWithCoordinate:[FLTGoogleMapJSONConversions locationFromLatLong:data[0]]
+               intensity:[data[1] doubleValue]];
+}
+
++ (NSArray<GMUWeightedLatLng *> *)weightedDataFromArray:(NSArray *)data {
+  NSMutableArray<GMUWeightedLatLng *> *weightedData = [[NSMutableArray alloc] init];
+  for (NSArray *latLng in data) {
+    GMUWeightedLatLng *weightedLatLng =
+        [FLTGoogleMapJSONConversions weightedLatLngFromArray:latLng];
+    if (weightedLatLng == nil) continue;
+    [weightedData addObject:weightedLatLng];
+  }
+
+  return weightedData;
+}
+
++ (GMUGradient *)gradientFromDictionary:(NSDictionary *)data {
+  NSMutableArray<UIColor *> *colors = [[NSMutableArray alloc] init];
+
+  NSArray *colorData = data[@"colors"];
+  for (NSNumber *colorCode in colorData) {
+    [colors addObject:[FLTGoogleMapJSONConversions colorFromRGBA:colorCode]];
+  }
+
+  return [[GMUGradient alloc] initWithColors:colors
+                                 startPoints:data[@"startPoints"]
+                                colorMapSize:[data[@"colorMapSize"] intValue]];
+}
+
 @end
