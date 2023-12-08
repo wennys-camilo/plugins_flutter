@@ -1,6 +1,11 @@
 ## 2.2.0
 
 * Adds support for heatmap layers
+* Updates minimum Flutter version to 3.0.
+
+## 2.1.13
+
+* Updates code for stricter lint checks.
 * Updates code for new analysis options.
 * Re-enable XCUITests: testUserInterface.
 * Remove unnecessary `RunnerUITests` target from Podfile of the example app.

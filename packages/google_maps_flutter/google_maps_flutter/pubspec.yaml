@@ -6,7 +6,7 @@ version: 2.3.0
 
 environment:
   sdk: ">=2.14.0 <3.0.0"
-  flutter: ">=2.10.0"
+  flutter: ">=3.0.0"
 
 flutter:
   plugin:
@@ -28,7 +28,6 @@ dev_dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.0.0
   stream_transform: ^2.0.0
-
 
 # FOR TESTING ONLY. DO NOT MERGE.
 dependency_overrides:
